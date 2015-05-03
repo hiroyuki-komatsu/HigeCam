@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">HigeCam</string>
+    <string name="shutter">Hige!</string>
+    <string name="description_info">Info</string>
+
+    <string name="intro_message">
+        <![CDATA[
+
+
+            HigeCam makes you up with Hige!.
+
+
+        ]]>
+    </string>
 </resources>

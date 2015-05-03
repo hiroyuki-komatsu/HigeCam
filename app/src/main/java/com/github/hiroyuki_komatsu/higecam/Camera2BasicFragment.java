@@ -24,10 +24,16 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -53,6 +59,8 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
+import com.github.hiroyuki_komatsu.higecam.R;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -146,6 +154,8 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
      */
     private AutoFitTextureView mTextureView;
 
+    private MustacheView mMustacheView;
+
     /**
      * A {@link CameraCaptureSession } for camera preview.
      */
@@ -161,6 +171,10 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
      */
 
     private Size mPreviewSize;
+
+    // Mustache bitmap
+    private Bitmap mMustacheBitmap;
+
 
     /**
      * {@link CameraDevice.StateCallback} is called when {@link CameraDevice} changes its state.
@@ -224,7 +238,8 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
 
         @Override
         public void onImageAvailable(ImageReader reader) {
-            mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mFile));
+            mBackgroundHandler.post(
+                    new ImageSaver(reader.acquireNextImage(), mMustacheBitmap, mFile));
         }
 
     };
@@ -390,6 +405,12 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
         view.findViewById(R.id.picture).setOnClickListener(this);
         view.findViewById(R.id.info).setOnClickListener(this);
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
+
+        // Initialize Mustache.
+        mMustacheView = (MustacheView) view.findViewById(R.id.mustacheView);
+        Resources resources = getResources();
+        Drawable mustacheDrawable = resources.getDrawable(R.drawable.mustache, null);
+        mMustacheBitmap = ((BitmapDrawable) mustacheDrawable).getBitmap();
     }
 
     @Override
@@ -464,8 +485,12 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
                 if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     mTextureView.setAspectRatio(
                             mPreviewSize.getWidth(), mPreviewSize.getHeight());
+                    mMustacheView.setAspectRatio(
+                            mPreviewSize.getWidth(), mPreviewSize.getHeight());
                 } else {
                     mTextureView.setAspectRatio(
+                            mPreviewSize.getHeight(), mPreviewSize.getWidth());
+                    mMustacheView.setAspectRatio(
                             mPreviewSize.getHeight(), mPreviewSize.getWidth());
                 }
 
@@ -695,7 +720,9 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
             // This is the CaptureRequest.Builder that we use to take a picture.
             final CaptureRequest.Builder captureBuilder =
                     mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-            captureBuilder.addTarget(mImageReader.getSurface());
+            Surface surface = mImageReader.getSurface();
+//            Canvas canvas = surface.
+            captureBuilder.addTarget(surface);
 
             // Use the same AE and AF modes as the preview.
             captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
@@ -780,8 +807,11 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
          */
         private final File mFile;
 
-        public ImageSaver(Image image, File file) {
+        private final Bitmap mMustacheBitmap;
+
+        public ImageSaver(Image image, Bitmap mustacheBitmap, File file) {
             mImage = image;
+            mMustacheBitmap = mustacheBitmap;
             mFile = file;
         }
 
@@ -790,10 +820,40 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
             ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inMutable = true;
+            Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+            Canvas canvas = new Canvas(bitmap);
+
+            // Get scaled mustache
+            int mustacheSize = canvas.getWidth() / 3;
+
+            // mMustacheBitmap should be square.
+            Bitmap scaledMustache = Bitmap.createScaledBitmap(
+                        mMustacheBitmap, mustacheSize, mustacheSize, false /* filter */);
+
+            int mustacheOffset = scaledMustache.getWidth() / 2;
+            canvas.drawBitmap(scaledMustache,
+                    bitmap.getWidth() / 2 - mustacheOffset,
+                    bitmap.getHeight() / 2 - mustacheOffset,
+                    null);
+/*
+            Paint mPaintText;
+            mPaintText = new Paint();
+            mPaintText.setColor(Color.WHITE);
+            mPaintText.setTypeface(Typeface.DEFAULT);
+            mPaintText.setAntiAlias(true);
+            mPaintText.setTextSize(48);
+
+            canvas.drawText("Hige", 10, 10, mPaintText);
+*/
+
             FileOutputStream output = null;
             try {
                 output = new FileOutputStream(mFile);
-                output.write(bytes);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, output);
+                // output.write(bytes);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
