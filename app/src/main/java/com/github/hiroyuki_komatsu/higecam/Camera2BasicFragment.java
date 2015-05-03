@@ -721,7 +721,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
             final CaptureRequest.Builder captureBuilder =
                     mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             Surface surface = mImageReader.getSurface();
-//            Canvas canvas = surface.
             captureBuilder.addTarget(surface);
 
             // Use the same AE and AF modes as the preview.
@@ -838,22 +837,11 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
                     bitmap.getWidth() / 2 - mustacheOffset,
                     bitmap.getHeight() / 2 - mustacheOffset,
                     null);
-/*
-            Paint mPaintText;
-            mPaintText = new Paint();
-            mPaintText.setColor(Color.WHITE);
-            mPaintText.setTypeface(Typeface.DEFAULT);
-            mPaintText.setAntiAlias(true);
-            mPaintText.setTextSize(48);
-
-            canvas.drawText("Hige", 10, 10, mPaintText);
-*/
 
             FileOutputStream output = null;
             try {
                 output = new FileOutputStream(mFile);
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, output);
-                // output.write(bytes);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
