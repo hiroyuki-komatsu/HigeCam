@@ -240,7 +240,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
 
         @Override
         public void onImageAvailable(ImageReader reader) {
-            Log.e(TAG, "onImageAvailable");
             mBackgroundHandler.post(
                     new ImageSaver(reader.acquireNextImage(),
                             mMustacheBitmap,
@@ -284,7 +283,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
                     break;
                 }
                 case STATE_WAITING_LOCK: {
-                    Log.e(TAG, "STATE_WATING_LOCK");
                     int afState = result.get(CaptureResult.CONTROL_AF_STATE);
                     if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState ||
                             CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState) {
@@ -300,7 +298,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
                     break;
                 }
                 case STATE_WAITING_PRECAPTURE: {
-                    Log.e(TAG, "STATE_WATING_PRECAPTURE");
                     // CONTROL_AE_STATE can be null on some devices
                     Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                     if (aeState == null ||
@@ -311,7 +308,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
                     break;
                 }
                 case STATE_WAITING_NON_PRECAPTURE: {
-                    Log.e(TAG, "STATE_WATING_NON_PRECAPTURE");
                     // CONTROL_AE_STATE can be null on some devices
                     Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                     if (aeState == null || aeState != CaptureResult.CONTROL_AE_STATE_PRECAPTURE) {
@@ -326,7 +322,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
         @Override
         public void onCaptureProgressed(CameraCaptureSession session, CaptureRequest request,
                                         CaptureResult partialResult) {
-            Log.e(TAG, "onCaptureProgressed");
             process(partialResult);
         }
 
@@ -479,7 +474,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
                         new CompareSizesByArea());
                 mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
                         ImageFormat.JPEG, /*maxImages*/2);
-                Log.e(TAG, cameraId);
                 mImageReader.setOnImageAvailableListener(
                         mOnImageAvailableListener, mBackgroundHandler);
 
@@ -678,7 +672,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
      * Initiate a still image capture.
      */
     private void takePicture() {
-        Log.e(TAG, "takePicture");
         lockFocus();
     }
 
@@ -686,7 +679,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
      * Lock the focus as the first step for a still image capture.
      */
     private void lockFocus() {
-        Log.e(TAG, "lockFocus");
         try {
             // This is how to tell the camera to lock focus.
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
@@ -724,7 +716,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
      */
     private void captureStillPicture() {
         try {
-            Log.e(TAG, "captureStillPicture");
             final Activity activity = getActivity();
             if (null == activity || null == mCameraDevice) {
                 return;
@@ -788,7 +779,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.picture: {
-                Log.e(TAG, "onClick");
                 takePicture();
                 break;
             }
@@ -854,27 +844,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
                     null);
 
             String url = MediaStore.Images.Media.insertImage(mContentResolver, bitmap, "", "");
-            Log.e(TAG, url);
-/*
-            FileOutputStream output = null;
-            try {
-                output = new FileOutputStream(mFile);
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, output);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                mImage.close();
-                if (null != output) {
-                    try {
-                        output.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            */
         }
 
     }
