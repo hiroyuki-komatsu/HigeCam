@@ -227,11 +227,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
     private ImageReader mImageReader;
 
     /**
-     * This is the output file for our picture.
-     */
-    private File mFile;
-
-    /**
      * This a callback object for the {@link ImageReader}. "onImageAvailable" will be called when a
      * still image is ready to be saved.
      */
@@ -419,7 +414,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mFile = new File(getActivity().getExternalFilesDir(null), "pic.jpg");
     }
 
     @Override
@@ -742,7 +736,7 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
                 @Override
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request,
                                                TotalCaptureResult result) {
-                    showToast("Saved: " + mFile);
+                    showToast("Saved");
                     unlockFocus();
                 }
             };
@@ -804,10 +798,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
          * The JPEG image
          */
         private final Image mImage;
-        /**
-         * The file we save the image into.
-         */
-        // private File mFile;
 
         private final Bitmap mMustacheBitmap;
         private final ContentResolver mContentResolver;
@@ -816,7 +806,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
             mImage = image;
             mMustacheBitmap = mustacheBitmap;
             mContentResolver = contentResolver;
-//            mFile = file;
         }
 
         @Override
