@@ -293,7 +293,6 @@ public class Camera2BasicFragment extends Fragment implements View.OnClickListen
                         if (aeState == null ||
                                 aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) {
                             mState = STATE_WAITING_NON_PRECAPTURE;
-                            captureStillPicture();
                         } else {
                             runPrecaptureSequence();
                         }
